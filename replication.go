@@ -419,6 +419,7 @@ func (rc *ReplicationConn) StartReplication(slotName string, startLsn uint64, ti
 		fmt.Printf("StartReplication fail: %s", err)
 		return
 	}
+	fmt.Printf("StartReplication ok")
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), initialReplicationResponseTimeout)
 	defer cancelFn()
@@ -429,6 +430,14 @@ func (rc *ReplicationConn) StartReplication(slotName string, startLsn uint64, ti
 	// that indicates the start replication command failed
 	var r *ReplicationMessage
 	r, err = rc.WaitForReplicationMessage(ctx)
+	if err != nil {
+		fmt.Printf("WaitForReplicationMessage fail: %s", err)
+	} else if r == nil {
+		fmt.Printf("WaitForReplicationMessage returned nil")
+	} else {
+		fmt.Printf("WaitForReplicationMessage ok")
+	}
+
 	if err != nil && r != nil {
 		if rc.c.shouldLog(LogLevelError) {
 			rc.c.log(LogLevelError, "Unexpected replication message", map[string]interface{}{"msg": r, "err": err})
