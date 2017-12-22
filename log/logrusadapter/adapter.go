@@ -3,7 +3,7 @@
 package logrusadapter
 
 import (
-	"github.com/jackc/pgx"
+	"github.com/rchowinfoblox/pgx"
 	"github.com/sirupsen/logrus"
 )
 

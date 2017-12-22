@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jackc/pgx/chunkreader"
+	"github.com/rchowinfoblox/pgx/chunkreader"
 	"github.com/pkg/errors"
 )
 

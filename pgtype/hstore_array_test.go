@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/pgtype"
-	"github.com/jackc/pgx/pgtype/testutil"
+	"github.com/rchowinfoblox/pgx"
+	"github.com/rchowinfoblox/pgx/pgtype"
+	"github.com/rchowinfoblox/pgx/pgtype/testutil"
 )
 
 func TestHstoreArrayTranscode(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
-	"github.com/jackc/pgx/pgio"
+	"github.com/rchowinfoblox/pgx/pgio"
 )
 
 type ParameterDescription struct {

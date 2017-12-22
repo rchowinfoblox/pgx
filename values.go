@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/jackc/pgx/pgio"
-	"github.com/jackc/pgx/pgtype"
+	"github.com/rchowinfoblox/pgx/pgio"
+	"github.com/rchowinfoblox/pgx/pgtype"
 	"github.com/pkg/errors"
 )
 

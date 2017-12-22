@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/pgmock"
-	"github.com/jackc/pgx/pgproto3"
+	"github.com/rchowinfoblox/pgx"
+	"github.com/rchowinfoblox/pgx/pgmock"
+	"github.com/rchowinfoblox/pgx/pgproto3"
 )
 
 func TestTransactionSuccessfulCommit(t *testing.T) {

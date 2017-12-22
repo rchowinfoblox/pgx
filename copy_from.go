@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/jackc/pgx/pgio"
-	"github.com/jackc/pgx/pgproto3"
+	"github.com/rchowinfoblox/pgx/pgio"
+	"github.com/rchowinfoblox/pgx/pgproto3"
 	"github.com/pkg/errors"
 )
 

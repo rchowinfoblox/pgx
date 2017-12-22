@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jackc/pgx/pgtype"
-	"github.com/jackc/pgx/pgtype/testutil"
+	"github.com/rchowinfoblox/pgx/pgtype"
+	"github.com/rchowinfoblox/pgx/pgtype/testutil"
 )
 
 // For test purposes only. Note that it does not normalize values. e.g. (Int: 1, Exp: 3) will not equal (Int: 1000, Exp: 0)
