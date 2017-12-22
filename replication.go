@@ -412,10 +412,11 @@ func (rc *ReplicationConn) StartReplication(slotName string, startLsn uint64, ti
 		queryString += fmt.Sprintf(" %s", arg)
 	}
 
-	rc.c.log(LogLevelInfo, "StartReplication query", map[string]interface{}{"query": queryString})
+	//rc.c.log(LogLevelInfo, "StartReplication query", map[string]interface{}{"query": queryString})
+	fmt.Printf("StartReplication query=%s", queryString)
 
 	if err = rc.c.sendQuery(queryString); err != nil {
-		rc.c.log(LogLevelError, "StartReplication fail", map[string]interface{}{"query": queryString, "err": err})
+		fmt.Printf("StartReplication fail: %s", err)
 		return
 	}
 
