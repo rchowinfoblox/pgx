@@ -1222,6 +1222,7 @@ func (c *Conn) rxMsg() (pgproto3.BackendMessage, error) {
 
 	msg, err := c.frontend.Receive()
 	if err != nil {
+		c.log(LogLevelError, "frontend.Receive fail", map[string]interface{}{"err": err})
 		if netErr, ok := err.(net.Error); !(ok && netErr.Timeout()) {
 			c.die(err)
 		}
@@ -1231,6 +1232,7 @@ func (c *Conn) rxMsg() (pgproto3.BackendMessage, error) {
 	c.lastActivityTime = time.Now()
 
 	// fmt.Printf("rxMsg: %#v\n", msg)
+	c.log(LogLevelTrace, "frontend.Receive ok", map[string]interface{}{"msg": fmt.Sprintf("%#v", msg)})
 
 	return msg, nil
 }

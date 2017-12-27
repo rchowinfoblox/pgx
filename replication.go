@@ -214,26 +214,32 @@ func (rc *ReplicationConn) CauseOfDeath() error {
 func (rc *ReplicationConn) readReplicationMessage() (r *ReplicationMessage, err error) {
 	msg, err := rc.c.rxMsg()
 	if err != nil {
+		rc.c.log(LogLevelError, "rxMsg fail", map[string]interface{}{"err": err})
 		return
 	}
+	rc.c.log(LogLevelTrace, "rxMsg ok", nil)
 
 	switch msg := msg.(type) {
 	case *pgproto3.NoticeResponse:
+		rc.c.log(LogLevelTrace, "NoticeResponse", nil)
 		pgError := rc.c.rxErrorResponse((*pgproto3.ErrorResponse)(msg))
 		if rc.c.shouldLog(LogLevelInfo) {
 			rc.c.log(LogLevelInfo, pgError.Error(), nil)
 		}
 	case *pgproto3.ErrorResponse:
+		rc.c.log(LogLevelTrace, "ErrorResponse", nil)
 		err = rc.c.rxErrorResponse(msg)
 		if rc.c.shouldLog(LogLevelError) {
 			rc.c.log(LogLevelError, err.Error(), nil)
 		}
 		return
 	case *pgproto3.CopyBothResponse:
+		rc.c.log(LogLevelTrace, "CopyBothResponse", nil)
 		// This is the tail end of the replication process start,
 		// and can be safely ignored
 		return
 	case *pgproto3.CopyData:
+		rc.c.log(LogLevelTrace, "CopyData", nil)
 		msgType := msg.Data[0]
 		rp := 1
 
@@ -412,14 +418,13 @@ func (rc *ReplicationConn) StartReplication(slotName string, startLsn uint64, ti
 		queryString += fmt.Sprintf(" %s", arg)
 	}
 
-	//rc.c.log(LogLevelInfo, "StartReplication query", map[string]interface{}{"query": queryString})
-	fmt.Printf("StartReplication query=%s", queryString)
+	rc.c.log(LogLevelTrace, "StartReplication query", map[string]interface{}{"query": queryString})
 
 	if err = rc.c.sendQuery(queryString); err != nil {
-		fmt.Printf("StartReplication fail: %s", err)
+		rc.c.log(LogLevelError, "sendQuery fail", map[string]interface{}{"err": err})
 		return
 	}
-	fmt.Printf("StartReplication ok")
+	rc.c.log(LogLevelTrace, "sendQuery ok", nil)
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), initialReplicationResponseTimeout)
 	defer cancelFn()
@@ -431,11 +436,11 @@ func (rc *ReplicationConn) StartReplication(slotName string, startLsn uint64, ti
 	var r *ReplicationMessage
 	r, err = rc.WaitForReplicationMessage(ctx)
 	if err != nil {
-		fmt.Printf("WaitForReplicationMessage fail: %s", err)
+		rc.c.log(LogLevelError, "WaitForReplicationMessage fail", map[string]interface{}{"err": err})
 	} else if r == nil {
-		fmt.Printf("WaitForReplicationMessage returned nil")
+		rc.c.log(LogLevelTrace, "WaitForReplicationMessage returned nil", nil)
 	} else {
-		fmt.Printf("WaitForReplicationMessage ok")
+		rc.c.log(LogLevelTrace, "WaitForReplicationMessage ok", nil)
 	}
 
 	if err != nil && r != nil {
