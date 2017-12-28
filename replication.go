@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -295,17 +296,23 @@ func (rc *ReplicationConn) WaitForReplicationMessage(ctx context.Context) (*Repl
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
+		rc.c.log(LogLevelTrace, "WaitForReplicationMessage ctx not Done yet", nil)
 	}
 
 	go func() {
 		select {
 		case <-ctx.Done():
 			if err := rc.c.conn.SetDeadline(time.Now()); err != nil {
+				rc.c.log(LogLevelTrace, "WaitForReplicationMessage goroutine SetDeadline",
+					map[string]interface{}{"err": err})
 				rc.Close() // Close connection if unable to set deadline
 				return
 			}
+			rc.c.log(LogLevelTrace, "WaitForReplicationMessage goroutine ctx.Done",
+				map[string]interface{}{"ctx.Err()": ctx.Err()})
 			rc.c.closedChan <- ctx.Err()
 		case <-rc.c.doneChan:
+			rc.c.log(LogLevelTrace, "WaitForReplicationMessage goroutine doneChan", nil)
 		}
 	}()
 
@@ -315,14 +322,19 @@ func (rc *ReplicationConn) WaitForReplicationMessage(ctx context.Context) (*Repl
 	select {
 	case err = <-rc.c.closedChan:
 		if err := rc.c.conn.SetDeadline(time.Time{}); err != nil {
+			rc.c.log(LogLevelTrace, "WaitForReplicationMessage closedChan SetDeadline",
+				map[string]interface{}{"err": err})
 			rc.Close() // Close connection if unable to disable deadline
 			return nil, err
 		}
+
+		rc.c.log(LogLevelTrace, "WaitForReplicationMessage closedChan", nil)
 
 		if opErr == nil {
 			err = nil
 		}
 	case rc.c.doneChan <- struct{}{}:
+		rc.c.log(LogLevelTrace, "WaitForReplicationMessage doneChan", nil)
 		err = opErr
 	}
 
@@ -407,15 +419,14 @@ func (rc *ReplicationConn) TimelineHistory(timeline int) (r *Rows, err error) {
 // This function assumes that slotName has already been created. In order to omit the timeline argument
 // pass a -1 for the timeline to get the server default behavior.
 func (rc *ReplicationConn) StartReplication(slotName string, startLsn uint64, timeline int64, pluginArguments ...string) (err error) {
-	var queryString string
+	queryString := fmt.Sprintf("START_REPLICATION SLOT %s LOGICAL %s", slotName, FormatLSN(startLsn))
 	if timeline >= 0 {
-		queryString = fmt.Sprintf("START_REPLICATION SLOT %s LOGICAL %s TIMELINE %d", slotName, FormatLSN(startLsn), timeline)
-	} else {
-		queryString = fmt.Sprintf("START_REPLICATION SLOT %s LOGICAL %s", slotName, FormatLSN(startLsn))
+		timelineOption := fmt.Sprintf("TIMELINE %d", timeline)
+		pluginArguments = append(pluginArguments, timelineOption)
 	}
 
-	for _, arg := range pluginArguments {
-		queryString += fmt.Sprintf(" %s", arg)
+	if len(pluginArguments) > 0 {
+		queryString += fmt.Sprintf(" ( %s )", strings.Join(pluginArguments, ", "))
 	}
 
 	rc.c.log(LogLevelTrace, "StartReplication query", map[string]interface{}{"query": queryString})
